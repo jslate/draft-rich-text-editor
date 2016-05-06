@@ -1,3 +1,35 @@
 .public-DraftEditor-content {
   border: 1px solid gray;
+  min-height: 100px;
+}
+
+.menu {
+  display: inline-block;
+  width: 22px;
+  text-align: center;
+  vertical-align: top;
+}
+
+.menu a {
+  text-decoration: none;
+  color: #aaa;
+  font-weight: bolder;
+  font-size: 1.5em;
+}
+
+.menu a.on {
+  color: #555;
+}
+
+.menu a.i {
+  font-style: italic;
+}
+
+.ed {
+  display: inline-block;
+  width: 500px;
+}
+
+.emoji-menu {
+  font-size: 1.3em;
 }

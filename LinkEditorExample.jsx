@@ -193,10 +193,10 @@ const styles = {
   },
 };
 
-const editorElement = document.getElementById('target');
-if (editorElement) {
-  ReactDOM.render(
-    <LinkEditorExample />,
-    editorElement
-  );
-}
+// const editorElement = document.getElementById('target');
+// if (editorElement) {
+//   ReactDOM.render(
+//     <LinkEditorExample />,
+//     editorElement
+//   );
+// }

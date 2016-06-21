@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Editor, EditorState, ContentState, RichUtils, Entity, AtomicBlockUtils, Modifier} from 'draft-js';
+import classNames from 'classnames';
+import _ from 'lodash';
 
 class MyEditor extends React.Component {
   constructor(props) {
@@ -9,47 +11,49 @@ class MyEditor extends React.Component {
     super(props);
     const contentState = ContentState.createFromText(localStorage.getItem('myEditorContent') || '');
     this.state = {emojiMenuVisible: false, editorState: EditorState.createWithContent(contentState)};
-    this.onChange = (editorState) => {
-      this.setState({editorState}, () => {
-        setTimeout(() => this.refs.editor.focus(), 0);
-      });
-      localStorage.setItem("myEditorContent", editorState.getCurrentContent().getPlainText());
-    }
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
-    this._onBoldClick = this._onBoldClick.bind(this);
-    this._onItalicsClick = this._onItalicsClick.bind(this);
-    this._onSmileyClick = this._onSmileyClick.bind(this);
-    this._doEmoji = this._doEmoji.bind(this);
+    this.onStyleButtonClick = this.onStyleButtonClick.bind(this);
+    this.onBoldClick = this.onBoldClick.bind(this);
+    this.onItalicsClick = this.onItalicsClick.bind(this);
+    this.onSmileyClick = this.onSmileyClick.bind(this);
+    this.doEmoji = this.doEmoji.bind(this);
     this.getButtonClassNames = this.getButtonClassNames.bind(this);
+    this.onEditorChange = this.onEditorChange.bind(this);
   }
 
-  _onItalicsClick() {
-
-    const toggle = RichUtils.toggleInlineStyle(this.state.editorState, 'ITALIC');
-    this.onChange(toggle);
+  onEditorChange(editorState) {
+    this.setState({editorState: editorState});
+    localStorage.setItem("myEditorContent", editorState.getCurrentContent().getPlainText());
   }
 
-  _onBoldClick() {
-     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
-   }
+  onStyleButtonClick(event, style) {
+    event.preventDefault();
+    this.onEditorChange(RichUtils.toggleInlineStyle(this.state.editorState, style));
+  }
 
-  _onSmileyClick() {
-     this.setState({emojiMenuVisible: !this.state.emojiMenuVisible});
-   }
+  onItalicsClick(event) { this.onStyleButtonClick(event, 'ITALIC'); }
 
-   _doEmoji(event) {
-      const contentState = Modifier.insertText(this.state.editorState.getCurrentContent(),
-        this.state.editorState.getSelection(),
-        event.target.textContent);
+  onBoldClick(event) { this.onStyleButtonClick(event, 'BOLD'); }
 
-      this.setState({emojiMenuVisible: false});
-      this.onChange(EditorState.push(this.state.editorState, contentState, 'insert-characters'));
-   }
+  onSmileyClick(event) {
+    event.preventDefault();
+    this.setState({emojiMenuVisible: !this.state.emojiMenuVisible});
+  }
+
+  doEmoji(event) {
+    event.preventDefault();
+    const contentState = Modifier.insertText(this.state.editorState.getCurrentContent(),
+      this.state.editorState.getSelection(),
+      event.target.textContent);
+
+    this.setState({emojiMenuVisible: false});
+    this.onEditorChange(EditorState.push(this.state.editorState, contentState, 'insert-characters'));
+  }
 
   handleKeyCommand(command) {
     const newState = RichUtils.handleKeyCommand(this.state.editorState, command);
     if (newState) {
-      this.onChange(newState);
+      this.onEditorChange(newState);
       return true;
     }
     return false;
@@ -57,7 +61,7 @@ class MyEditor extends React.Component {
 
   renderEmojiMenuItem(emoji, index) {
     const br = (index + 1) % 24 === 0 ? <br /> : '';
-    return <span key={index} onClick={this._doEmoji}>{emoji}{br}</span>;
+    return <span key={index} onMouseDown={this.doEmoji}>{emoji}{br}</span>;
   }
 
   renderEmojiMenu() {
@@ -72,29 +76,25 @@ class MyEditor extends React.Component {
     }
   }
 
-  getButtonClassNames(checkForInlineStyle, extraClassNames) {
-    if (this.state.editorState.getCurrentInlineStyle().includes(checkForInlineStyle)) {
-      return ('on ' + extraClassNames);
-    } else {
-      return extraClassNames;
-    }
-
+  getButtonClassNames(checkForInlineStyle, extraClassNames = []) {
+    return classNames(Object.assign({
+      on: this.state.editorState.getCurrentInlineStyle().includes(checkForInlineStyle)
+    }, _.fromPairs(extraClassNames.map((name) => [name, true]))));
   }
 
   render() {
-    const {editorState} = this.state;
     return (
       <div>
         <div className="menu">
-          <a href="#" className={this.getButtonClassNames('BOLD')} onClick={this._onBoldClick}>B</a><br />
-          <a href="#" className={this.getButtonClassNames('ITALIC', 'i')} onClick={this._onItalicsClick}>I</a><br />
-          <a href="#" onClick={this._onSmileyClick}><img src="smile.png" /></a><br />
+          <a href="#" className={this.getButtonClassNames('BOLD')} onMouseDown={this.onBoldClick}>B</a><br />
+          <a href="#" className={this.getButtonClassNames('ITALIC', ['i'])} onMouseDown={this.onItalicsClick}>I</a><br />
+          <a href="#" onMouseDown={this.onSmileyClick}><img src="smile.png" /></a><br />
         </div>
         <div className="ed">
           <Editor
-            editorState={editorState}
+            editorState={this.state.editorState}
             handleKeyCommand={this.handleKeyCommand}
-            onChange={this.onChange}
+            onChange={this.onEditorChange}
             ref="editor"
             />
           {this.renderEmojiMenu()}

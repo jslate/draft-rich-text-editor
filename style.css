@@ -33,3 +33,7 @@
 .emoji-menu {
   font-size: 1.3em;
 }
+
+.RichEditor-activeButton {
+  color: green;
+}

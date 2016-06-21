@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import {Editor, EditorState, ContentState, RichUtils, Entity, AtomicBlockUtils, Modifier} from 'draft-js';
 import classNames from 'classnames';
 import _ from 'lodash';
+import EmojiMenu from './EmojiMenu.jsx'
 
 class MyEditor extends React.Component {
   constructor(props) {
@@ -41,7 +42,6 @@ class MyEditor extends React.Component {
   }
 
   doEmoji(event) {
-    event.preventDefault();
     const contentState = Modifier.insertText(this.state.editorState.getCurrentContent(),
       this.state.editorState.getSelection(),
       event.target.textContent);
@@ -59,23 +59,6 @@ class MyEditor extends React.Component {
     return false;
   }
 
-  renderEmojiMenuItem(emoji, index) {
-    const br = (index + 1) % 24 === 0 ? <br /> : '';
-    return <span key={index} onMouseDown={this.doEmoji}>{emoji}{br}</span>;
-  }
-
-  renderEmojiMenu() {
-    if (this.state.emojiMenuVisible) {
-      const emoji = ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😇', '😈', '😉', '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒', '😓', '😔', '😕', '😖', '😗', '😘', '😙', '😚', '😛', '😜', '😝', '😞', '😟', '😠', '😡', '😢', '😣', '😤', '😥', '😦', '😧', '😨', '😩', '😪', '😫', '😬', '😭', '😮', '😯', '😰', '😱', '😲', '😳', '😴', '😵', '😶', '😷', '😸', '😹', '😺', '😻', '😼', '😽', '😾', '😿', '🙀', '🙅', '🙆', '🙇', '🙈', '🙉', '🙊', '🙋'];
-      const emojiMenuItems = emoji.map((e, i) => {
-        return this.renderEmojiMenuItem(e, i);
-      });
-      return (<div className="emoji-menu">{emojiMenuItems}</div>);
-    } else {
-      return null;
-    }
-  }
-
   getButtonClassNames(checkForInlineStyle, extraClassNames = []) {
     return classNames(Object.assign({
       on: this.state.editorState.getCurrentInlineStyle().includes(checkForInlineStyle)
@@ -86,8 +69,20 @@ class MyEditor extends React.Component {
     return (
       <div>
         <div className="menu">
-          <a href="#" className={this.getButtonClassNames('BOLD')} onMouseDown={this.onBoldClick}>B</a><br />
-          <a href="#" className={this.getButtonClassNames('ITALIC', ['i'])} onMouseDown={this.onItalicsClick}>I</a><br />
+          <a
+            href="#"
+            className={this.getButtonClassNames('BOLD')}
+            onMouseDown={this.onBoldClick}
+          >
+            B
+          </a><br />
+          <a
+            href="#"
+            className={this.getButtonClassNames('ITALIC', ['i'])}
+            onMouseDown={this.onItalicsClick}
+          >
+            I
+          </a><br />
           <a href="#" onMouseDown={this.onSmileyClick}><img src="smile.png" /></a><br />
         </div>
         <div className="ed">
@@ -97,7 +92,7 @@ class MyEditor extends React.Component {
             onChange={this.onEditorChange}
             ref="editor"
             />
-          {this.renderEmojiMenu()}
+          <EmojiMenu onClick={this.doEmoji} visible={this.state.emojiMenuVisible} />
         </div>
       </div>
     );

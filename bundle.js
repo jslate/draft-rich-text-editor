@@ -46,9 +46,9 @@
 
 	'use strict';
 
-	var _MyEditor = __webpack_require__(1);
+	var _RichTextEditor = __webpack_require__(1);
 
-	var _MyEditor2 = _interopRequireDefault(_MyEditor);
+	var _RichTextEditor2 = _interopRequireDefault(_RichTextEditor);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -82,6 +82,10 @@
 
 	var _EmojiMenu2 = _interopRequireDefault(_EmojiMenu);
 
+	var _LinkForm = __webpack_require__(312);
+
+	var _LinkForm2 = _interopRequireDefault(_LinkForm);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -90,19 +94,25 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var MyEditor = function (_React$Component) {
-	  _inherits(MyEditor, _React$Component);
+	var RichTextEditor = function (_React$Component) {
+	  _inherits(RichTextEditor, _React$Component);
 
-	  function MyEditor(props) {
-	    _classCallCheck(this, MyEditor);
+	  function RichTextEditor(props) {
+	    _classCallCheck(this, RichTextEditor);
 
 	    window.RichUtils = _draftJs.RichUtils;
 	    window.EditorState = _draftJs.EditorState;
 
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MyEditor).call(this, props));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(RichTextEditor).call(this, props));
 
 	    var contentState = _draftJs.ContentState.createFromText(localStorage.getItem('myEditorContent') || '');
-	    _this.state = { emojiMenuVisible: false, editorState: _draftJs.EditorState.createWithContent(contentState) };
+
+	    var decorator = new _draftJs.CompositeDecorator([{
+	      strategy: _this.findLinkEntities,
+	      component: _this.Link
+	    }]);
+
+	    _this.state = { emojiMenuVisible: false, editorState: _draftJs.EditorState.createWithContent(contentState, decorator) };
 	    _this.handleKeyCommand = _this.handleKeyCommand.bind(_this);
 	    _this.onStyleButtonClick = _this.onStyleButtonClick.bind(_this);
 	    _this.onBoldClick = _this.onBoldClick.bind(_this);
@@ -111,10 +121,11 @@
 	    _this.doEmoji = _this.doEmoji.bind(_this);
 	    _this.getButtonClassNames = _this.getButtonClassNames.bind(_this);
 	    _this.onEditorChange = _this.onEditorChange.bind(_this);
+	    _this.handleLinkFormSubmit = _this.handleLinkFormSubmit.bind(_this);
 	    return _this;
 	  }
 
-	  _createClass(MyEditor, [{
+	  _createClass(RichTextEditor, [{
 	    key: 'onEditorChange',
 	    value: function onEditorChange(editorState) {
 	      this.setState({ editorState: editorState });
@@ -143,14 +154,6 @@
 	      this.setState({ emojiMenuVisible: !this.state.emojiMenuVisible });
 	    }
 	  }, {
-	    key: 'doEmoji',
-	    value: function doEmoji(event) {
-	      var contentState = _draftJs.Modifier.insertText(this.state.editorState.getCurrentContent(), this.state.editorState.getSelection(), event.target.textContent);
-
-	      this.setState({ emojiMenuVisible: false });
-	      this.onEditorChange(_draftJs.EditorState.push(this.state.editorState, contentState, 'insert-characters'));
-	    }
-	  }, {
 	    key: 'handleKeyCommand',
 	    value: function handleKeyCommand(command) {
 	      var newState = _draftJs.RichUtils.handleKeyCommand(this.state.editorState, command);
@@ -170,6 +173,57 @@
 	      }, _lodash2.default.fromPairs(extraClassNames.map(function (name) {
 	        return [name, true];
 	      }))));
+	    }
+	  }, {
+	    key: 'doEmoji',
+	    value: function doEmoji(event) {
+	      var contentState = _draftJs.Modifier.insertText(this.state.editorState.getCurrentContent(), this.state.editorState.getSelection(), event.target.textContent);
+
+	      this.setState({ emojiMenuVisible: false });
+	      this.onEditorChange(_draftJs.EditorState.push(this.state.editorState, contentState, 'insert-characters'));
+	    }
+	  }, {
+	    key: 'handleLinkFormSubmit',
+	    value: function handleLinkFormSubmit(event, link) {
+	      var entityKey = _draftJs.Entity.create('LINK', 'MUTABLE', { url: link.url });
+
+	      // this.onEditorChange(EditorState.push(this.state.editorState, contentState, 'insert-characters'));
+
+	      var newEditorState = this.state.editorState;
+	      var newSelectionState = void 0;
+
+	      if (newEditorState.getSelection().isCollapsed()) {
+	        console.debug('Inserting "' + link.text + '...');
+	        var contentState = _draftJs.Modifier.insertText(newEditorState.getCurrentContent(), newEditorState.getSelection(), link.text);
+	        newEditorState = _draftJs.EditorState.push(newEditorState, contentState, 'insert-characters');
+	      } else {
+	        newSelectionState = SelectionStte.createEmtpy('string');
+	      }
+
+	      newEditorState = _draftJs.RichUtils.toggleLink(newEditorState, newEditorState.getSelection(), entityKey);
+
+	      this.setState({ editorState: newEditorState });
+	    }
+	  }, {
+	    key: 'findLinkEntities',
+	    value: function findLinkEntities(contentBlock, callback) {
+	      contentBlock.findEntityRanges(function (character) {
+	        var entityKey = character.getEntity();
+	        return entityKey !== null && _draftJs.Entity.get(entityKey).getType() === 'LINK';
+	      }, callback);
+	    }
+	  }, {
+	    key: 'Link',
+	    value: function Link(props) {
+	      var _Entity$get$getData = _draftJs.Entity.get(props.entityKey).getData();
+
+	      var url = _Entity$get$getData.url;
+
+	      return _react2.default.createElement(
+	        'a',
+	        { href: url },
+	        props.children
+	      );
 	    }
 	  }, {
 	    key: 'render',
@@ -217,17 +271,18 @@
 	            ref: 'editor'
 	          }),
 	          _react2.default.createElement(_EmojiMenu2.default, { onClick: this.doEmoji, visible: this.state.emojiMenuVisible })
-	        )
+	        ),
+	        _react2.default.createElement(_LinkForm2.default, { showLinkText: this.state.editorState.getSelection().isCollapsed(), onSubmit: this.handleLinkFormSubmit })
 	      );
 	    }
 	  }]);
 
-	  return MyEditor;
+	  return RichTextEditor;
 	}(_react2.default.Component);
 
 	var editorElement = document.getElementById('editor');
 	if (editorElement) {
-	  _reactDom2.default.render(_react2.default.createElement(MyEditor, null), document.getElementById('editor'));
+	  _reactDom2.default.render(_react2.default.createElement(RichTextEditor, null), document.getElementById('editor'));
 	}
 
 /***/ },
@@ -54730,6 +54785,97 @@
 	}(_react2.default.Component);
 
 	exports.default = EmojiMenu;
+
+/***/ },
+/* 312 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var LinkForm = function (_React$Component) {
+	  _inherits(LinkForm, _React$Component);
+
+	  function LinkForm(props) {
+	    _classCallCheck(this, LinkForm);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LinkForm).call(this, props));
+
+	    _this.onFormSubmit = _this.onFormSubmit.bind(_this);
+	    _this.state = { url: null, text: null };
+	    return _this;
+	  }
+
+	  _createClass(LinkForm, [{
+	    key: "onFormSubmit",
+	    value: function onFormSubmit(event) {
+	      event.preventDefault();
+	      this.props.onSubmit(event, { url: this.state.url, text: this.state.text });
+	    }
+	  }, {
+	    key: "renderTextField",
+	    value: function renderTextField() {
+	      var _this2 = this;
+
+	      if (this.props.showLinkText) {
+	        return _react2.default.createElement(
+	          "label",
+	          null,
+	          "text: ",
+	          _react2.default.createElement("input", { onChange: function onChange(event) {
+	              return _this2.setState({ text: event.target.value });
+	            } })
+	        );
+	      }
+	      return null;
+	    }
+	  }, {
+	    key: "render",
+	    value: function render() {
+	      var _this3 = this;
+
+	      return _react2.default.createElement(
+	        "form",
+	        { className: "link-form" },
+	        this.renderTextField(),
+	        _react2.default.createElement(
+	          "label",
+	          null,
+	          "url: ",
+	          _react2.default.createElement("input", { onChange: function onChange(event) {
+	              return _this3.setState({ url: event.target.value });
+	            } })
+	        ),
+	        _react2.default.createElement(
+	          "button",
+	          { onClick: this.onFormSubmit },
+	          "Add link"
+	        )
+	      );
+	    }
+	  }]);
+
+	  return LinkForm;
+	}(_react2.default.Component);
+
+	exports.default = LinkForm;
 
 /***/ }
 /******/ ]);

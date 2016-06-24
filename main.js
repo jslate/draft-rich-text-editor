@@ -1,2 +1,2 @@
-import MyEditor from './MyEditor.jsx';
+import RichTextEditor from './RichTextEditor.jsx';
 

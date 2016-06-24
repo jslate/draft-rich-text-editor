@@ -21,12 +21,17 @@ class RichTextEditor extends React.Component {
       },
     ]);
 
-    this.state = {emojiMenuVisible: false, editorState: EditorState.createWithContent(contentState, decorator)};
+    this.state = {
+      emojiMenuVisible: false,
+      linkFormVisible: false,
+      editorState: EditorState.createWithContent(contentState, decorator)
+    };
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
     this.onStyleButtonClick = this.onStyleButtonClick.bind(this);
     this.onBoldClick = this.onBoldClick.bind(this);
     this.onItalicsClick = this.onItalicsClick.bind(this);
     this.onSmileyClick = this.onSmileyClick.bind(this);
+    this.onLinkButtonClick = this.onLinkButtonClick.bind(this);
     this.doEmoji = this.doEmoji.bind(this);
     this.getButtonClassNames = this.getButtonClassNames.bind(this);
     this.onEditorChange = this.onEditorChange.bind(this);
@@ -51,6 +56,11 @@ class RichTextEditor extends React.Component {
   onSmileyClick(event) {
     event.preventDefault();
     this.setState({emojiMenuVisible: !this.state.emojiMenuVisible});
+  }
+
+  onLinkButtonClick(event) {
+    event.preventDefault();
+    this.setState({linkFormVisible: !this.state.linkFormVisible});
   }
 
   handleKeyCommand(command) {
@@ -132,33 +142,36 @@ class RichTextEditor extends React.Component {
   render() {
     return (
       <div>
-        <div className="menu">
-          <a
-            href="#"
-            className={this.getButtonClassNames('BOLD')}
-            onMouseDown={this.onBoldClick}
-          >
-            B
-          </a><br />
-          <a
-            href="#"
-            className={this.getButtonClassNames('ITALIC', ['i'])}
-            onMouseDown={this.onItalicsClick}
-          >
-            I
-          </a><br />
-          <a href="#" onMouseDown={this.onSmileyClick}><img src="smile.png" /></a><br />
-        </div>
-        <div className="ed">
+        <div>
           <Editor
             editorState={this.state.editorState}
             handleKeyCommand={this.handleKeyCommand}
             onChange={this.onEditorChange}
             ref="editor"
             />
-          <EmojiMenu onClick={this.doEmoji} visible={this.state.emojiMenuVisible} />
         </div>
-        <LinkForm showLinkText={this.state.editorState.getSelection().isCollapsed()} onSubmit={this.handleLinkFormSubmit} />
+        <div>
+          <a
+            href="#"
+            className={this.getButtonClassNames('BOLD')}
+            onMouseDown={this.onBoldClick}
+          >
+            <img src="images/Bold.svg" style={{width: 20}} />
+          </a>
+          <a
+            href="#"
+            className={this.getButtonClassNames('ITALIC', ['i'])}
+            onMouseDown={this.onItalicsClick}
+          >
+            <img src="images/Italic.svg" style={{width: 20}} />
+          </a>
+          <a href="#" onMouseDown={this.onSmileyClick}><img src="images/Emoji.svg" style={{width: 20}} /></a>
+          <a href="#" onMouseDown={this.onLinkButtonClick}>
+            <img src="images/link.svg" style={{width: 20}} />
+          </a>
+        </div>
+        <LinkForm showLinkText={this.state.editorState.getSelection().isCollapsed()} visible={this.state.linkFormVisible} onSubmit={this.handleLinkFormSubmit} />
+        <EmojiMenu onClick={this.doEmoji} visible={this.state.emojiMenuVisible} />
       </div>
     );
   }

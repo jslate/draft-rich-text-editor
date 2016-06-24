@@ -112,12 +112,17 @@
 	      component: _this.Link
 	    }]);
 
-	    _this.state = { emojiMenuVisible: false, editorState: _draftJs.EditorState.createWithContent(contentState, decorator) };
+	    _this.state = {
+	      emojiMenuVisible: false,
+	      linkFormVisible: false,
+	      editorState: _draftJs.EditorState.createWithContent(contentState, decorator)
+	    };
 	    _this.handleKeyCommand = _this.handleKeyCommand.bind(_this);
 	    _this.onStyleButtonClick = _this.onStyleButtonClick.bind(_this);
 	    _this.onBoldClick = _this.onBoldClick.bind(_this);
 	    _this.onItalicsClick = _this.onItalicsClick.bind(_this);
 	    _this.onSmileyClick = _this.onSmileyClick.bind(_this);
+	    _this.onLinkButtonClick = _this.onLinkButtonClick.bind(_this);
 	    _this.doEmoji = _this.doEmoji.bind(_this);
 	    _this.getButtonClassNames = _this.getButtonClassNames.bind(_this);
 	    _this.onEditorChange = _this.onEditorChange.bind(_this);
@@ -152,6 +157,12 @@
 	    value: function onSmileyClick(event) {
 	      event.preventDefault();
 	      this.setState({ emojiMenuVisible: !this.state.emojiMenuVisible });
+	    }
+	  }, {
+	    key: 'onLinkButtonClick',
+	    value: function onLinkButtonClick(event) {
+	      event.preventDefault();
+	      this.setState({ linkFormVisible: !this.state.linkFormVisible });
 	    }
 	  }, {
 	    key: 'handleKeyCommand',
@@ -233,7 +244,17 @@
 	        null,
 	        _react2.default.createElement(
 	          'div',
-	          { className: 'menu' },
+	          null,
+	          _react2.default.createElement(_draftJs.Editor, {
+	            editorState: this.state.editorState,
+	            handleKeyCommand: this.handleKeyCommand,
+	            onChange: this.onEditorChange,
+	            ref: 'editor'
+	          })
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          null,
 	          _react2.default.createElement(
 	            'a',
 	            {
@@ -241,9 +262,8 @@
 	              className: this.getButtonClassNames('BOLD'),
 	              onMouseDown: this.onBoldClick
 	            },
-	            'B'
+	            _react2.default.createElement('img', { src: 'images/Bold.svg', style: { width: 20 } })
 	          ),
-	          _react2.default.createElement('br', null),
 	          _react2.default.createElement(
 	            'a',
 	            {
@@ -251,28 +271,21 @@
 	              className: this.getButtonClassNames('ITALIC', ['i']),
 	              onMouseDown: this.onItalicsClick
 	            },
-	            'I'
+	            _react2.default.createElement('img', { src: 'images/Italic.svg', style: { width: 20 } })
 	          ),
-	          _react2.default.createElement('br', null),
 	          _react2.default.createElement(
 	            'a',
 	            { href: '#', onMouseDown: this.onSmileyClick },
-	            _react2.default.createElement('img', { src: 'smile.png' })
+	            _react2.default.createElement('img', { src: 'images/Emoji.svg', style: { width: 20 } })
 	          ),
-	          _react2.default.createElement('br', null)
+	          _react2.default.createElement(
+	            'a',
+	            { href: '#', onMouseDown: this.onLinkButtonClick },
+	            _react2.default.createElement('img', { src: 'images/link.svg', style: { width: 20 } })
+	          )
 	        ),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'ed' },
-	          _react2.default.createElement(_draftJs.Editor, {
-	            editorState: this.state.editorState,
-	            handleKeyCommand: this.handleKeyCommand,
-	            onChange: this.onEditorChange,
-	            ref: 'editor'
-	          }),
-	          _react2.default.createElement(_EmojiMenu2.default, { onClick: this.doEmoji, visible: this.state.emojiMenuVisible })
-	        ),
-	        _react2.default.createElement(_LinkForm2.default, { showLinkText: this.state.editorState.getSelection().isCollapsed(), onSubmit: this.handleLinkFormSubmit })
+	        _react2.default.createElement(_LinkForm2.default, { showLinkText: this.state.editorState.getSelection().isCollapsed(), visible: this.state.linkFormVisible, onSubmit: this.handleLinkFormSubmit }),
+	        _react2.default.createElement(_EmojiMenu2.default, { onClick: this.doEmoji, visible: this.state.emojiMenuVisible })
 	      );
 	    }
 	  }]);
@@ -54851,24 +54864,28 @@
 	    value: function render() {
 	      var _this3 = this;
 
-	      return _react2.default.createElement(
-	        "form",
-	        { className: "link-form" },
-	        this.renderTextField(),
-	        _react2.default.createElement(
-	          "label",
-	          null,
-	          "url: ",
-	          _react2.default.createElement("input", { onChange: function onChange(event) {
-	              return _this3.setState({ url: event.target.value });
-	            } })
-	        ),
-	        _react2.default.createElement(
-	          "button",
-	          { onClick: this.onFormSubmit },
-	          "Add link"
-	        )
-	      );
+	      if (this.props.visible) {
+	        return _react2.default.createElement(
+	          "form",
+	          { className: "link-form" },
+	          this.renderTextField(),
+	          _react2.default.createElement(
+	            "label",
+	            null,
+	            "url: ",
+	            _react2.default.createElement("input", { onChange: function onChange(event) {
+	                return _this3.setState({ url: event.target.value });
+	              } })
+	          ),
+	          _react2.default.createElement(
+	            "button",
+	            { onClick: this.onFormSubmit },
+	            "Add link"
+	          )
+	        );
+	      } else {
+	        return null;
+	      }
 	    }
 	  }]);
 

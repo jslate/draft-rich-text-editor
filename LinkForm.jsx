@@ -20,13 +20,17 @@ class LinkForm extends React.Component {
   }
 
   render() {
-    return (
-      <form className="link-form">
-        {this.renderTextField()}
-        <label>url: <input onChange={(event) => this.setState({url: event.target.value})} /></label>
-        <button onClick={this.onFormSubmit}>Add link</button>
-      </form>
-    );
+    if (this.props.visible) {
+      return (
+        <form className="link-form">
+          {this.renderTextField()}
+          <label>url: <input onChange={(event) => this.setState({url: event.target.value})} /></label>
+          <button onClick={this.onFormSubmit}>Add link</button>
+        </form>
+      );
+    } else {
+      return null;
+    }
   }
 
 }

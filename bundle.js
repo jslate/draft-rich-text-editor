@@ -208,7 +208,7 @@
 	        var contentState = _draftJs.Modifier.insertText(newEditorState.getCurrentContent(), newEditorState.getSelection(), link.text);
 	        newEditorState = _draftJs.EditorState.push(newEditorState, contentState, 'insert-characters');
 	      } else {
-	        newSelectionState = SelectionStte.createEmtpy('string');
+	        newSelectionState = _draftJs.EditorState.createEmpty('string');
 	      }
 
 	      newEditorState = _draftJs.RichUtils.toggleLink(newEditorState, newEditorState.getSelection(), entityKey);
@@ -254,7 +254,7 @@
 	        ),
 	        _react2.default.createElement(
 	          'div',
-	          null,
+	          { className: 'menu' },
 	          _react2.default.createElement(
 	            'a',
 	            {

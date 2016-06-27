@@ -103,7 +103,7 @@ class RichTextEditor extends React.Component {
         link.text);
       newEditorState = EditorState.push(newEditorState, contentState, 'insert-characters');
     } else {
-      newSelectionState = SelectionStte.createEmtpy('string');
+      newSelectionState = EditorState.createEmpty('string');
 
     }
 
@@ -150,7 +150,7 @@ class RichTextEditor extends React.Component {
             ref="editor"
             />
         </div>
-        <div>
+        <div className="menu">
           <a
             href="#"
             className={this.getButtonClassNames('BOLD')}
